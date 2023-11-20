@@ -1,0 +1,47 @@
+# error_handling.py
+import logging
+import smtplib
+from email.mime.text import MIMEText
+from datetime import datetime
+
+def handle_error(exception):
+    # Log the error with timestamp
+    logging.error(f"Error at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {str(exception)}")
+
+    # Send an alert to the system administrator
+    send_admin_alert(str(exception))
+
+def send_admin_alert(message):
+    # Email configuration (replace with your SMTP server details)
+    smtp_server = 'smtp.example.com'
+    smtp_port = 587
+    smtp_username = 'your_admin@example.com'
+    smtp_password = 'your_admin_password'
+
+    # Sender and recipient email addresses
+    sender_email = 'your_alerts@example.com'
+    admin_email = 'admin@example.com'
+
+    subject = 'Alert: Error in Backup System'
+    body = f'Timestamp: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n\nError Details:\n{message}'
+
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = sender_email
+    msg['To'] = admin_email
+
+    try:
+        # Connect to the SMTP server
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            # Start TLS for security
+            server.starttls()
+
+            # Login to the email account
+            server.login(smtp_username, smtp_password)
+
+            # Send the email
+            server.sendmail(sender_email, [admin_email], msg.as_string())
+
+    except Exception as e:
+        # Log the email sending failure
+        logging.error(f"Error sending admin alert email: {str(e)}")
